@@ -4,6 +4,9 @@ import clients from './clients.js';
 function checkUserSession() {
     return !!localStorage.getItem('user');
 }
+function checkAdminSession() {
+    return !!localStorage.getItem('admin');
+}
 
 const router = createRouter({
     history: createWebHistory(),
@@ -12,13 +15,17 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-
-    if (requiresAuth && !checkUserSession()) {
+    if (requiresAuth && to.path !== '/admin/login' && !checkAdminSession()) {
+        next('/admin/login');
+    }
+    else if(to.meta.authencation && !checkUserSession()){
         next('/login');
-    } else {
+    }
+    else {
         document.title = `${to.meta.title || 'Default Title'}`;
         next();
     }
 });
+
 
 export default router;

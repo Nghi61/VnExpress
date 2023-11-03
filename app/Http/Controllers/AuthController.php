@@ -36,14 +36,16 @@ class AuthController extends Controller
         return response()->json(['status'=>200]);
     }
     public function Login(Request $request){
-        $credentials=$request->validate([
-            'user_name'=>'required',
-            'password'=>'required'
-        ]);
-        if(Auth::attempt([$credentials])){
-            return response()->json(['status'=>200]);
+
+        $user_name=$request->user_name;
+        $password=$request->password;
+        if (Auth::attempt(['user_name' => $user_name, 'password' => $password])) {
+            $user=auth()->user();
+            return response()->json(['user'=>$user,'status'=>200]);
         }
-        return response()->json(['status'=>401]);
+        else {
+            return response()->json(['status' => 401]);
+        }
     }
     public function isAdmin(Request $request)
     {
@@ -62,7 +64,7 @@ class AuthController extends Controller
             $user = Auth::user();
             $role = $user->role;
             if ($role == 0) {
-                return response()->json(['status' => 'success', 'user' => $user]);
+                return response()->json(['status' => 'success', 'admin' => $user]);
             } else {
                 return response()->json(['status' =>'error']);
             }

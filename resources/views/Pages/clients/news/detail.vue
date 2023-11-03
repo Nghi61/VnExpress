@@ -1,5 +1,5 @@
 <template>
-    <div class="container content">
+    <div class="container container-content">
         <template v-if="check == true">
             <div class="row">
                 <div class="col-sm-8 mt-3">
@@ -20,6 +20,7 @@
                         <div class="col-12 p-2">
                             <div class="card-body">
                                 <p class="card-text mt-2">{{ content }}</p>
+
                             </div>
                         </div>
                     </div>
@@ -48,33 +49,46 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12 p-3">
-                        <h4>Bình luận()</h4>
+
+                <div class="row" v-if="user">
+                    <div class="col-sm-8 mt-4">
+                        <h4>Bình luận({{ comments.length }})</h4>
                     </div>
-                    <div class="col-12 bg-danger">
-                        <template>
-                            <a-list class="comment-list" :header="`${data.length} replies`" item-layout="horizontal"
-                                :data-source="data">
-                                <template #renderItem="{ item }">
-                                    <a-list-item>
-                                        <a-comment :author="item.author" :avatar="item.avatar">
-                                            <template #content>
-                                                <p>
-                                                    {{ item.content }}
-                                                </p>
-                                            </template>
-                                            <template #datetime>
-                                                <a-tooltip :title="item.datetime.format('YYYY-MM-DD HH:mm:ss')">
-                                                    <span>{{ item.datetime.fromNow() }}</span>
-                                                </a-tooltip>
-                                            </template>
-                                        </a-comment>
-                                    </a-list-item>
-                                </template>
-                            </a-list>
-                        </template>
+                    <div class="col-sm-8">
+                        <a-list v-if="comments.length" :data-source="pageComment" item-layout="horizontal">
+                            <template #renderItem="{ item }">
+                                <a-list-item>
+                                    <a-comment :author="item.user_name" :avatar="item.avatar" :content="item.content"
+                                        :datetime="item.created_at" />
+                                </a-list-item>
+                            </template>
+                        </a-list>
+                        <div class="d-flex justify-content-end m-3">
+                            <a-pagination v-if="comments.length" :current="currentPage" :total="comments.length"
+                                :pageSize="pageSize" @change="handlePageChange" />
+                        </div>
+                        <a-comment>
+                            <template #avatar>
+                                <a-avatar :src="user.avatar" alt="Avatar" />
+                            </template>
+                            <template #content>
+                                <a-form-item>
+                                    <a-textarea v-model:value="value" :rows="4" />
+                                </a-form-item>
+                                <a-form-item>
+                                    <a-button html-type="submit" :loading="submitting" type="primary" @click="handleSubmit">
+                                        Bình luận
+                                    </a-button>
+                                </a-form-item>
+                            </template>
+                        </a-comment>
+
                     </div>
+                </div>
+                <div v-else class=" col-8 d-flex justify-content-center">
+                    <router-link class="p-4" :to="{ name: 'clients-login' }">
+                        <button class="btn btn-danger">Đăng nhập để bình luận</button>
+                    </router-link>
                 </div>
             </div>
         </template>
@@ -87,18 +101,75 @@
 </template>
 
 <script>
-import { defineComponent, h, reactive, toRefs, ref, onMounted } from 'vue';
+import { defineComponent, h, reactive, toRefs, ref, watch, onMounted, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
-import { message, Comment,List } from 'ant-design-vue';
+import { message, Comment, List, Form, ListItem, FormItem, Pagination } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-dayjs.extend(relativeTime);
-
 
 export default defineComponent({
+    components: {
+        LoadingOutlined,
+    },
     setup() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const comments = ref([]);
+        const submitting = ref(false);
+        const value = ref('');
+        const currentPage = ref(1);
+        const pageSize = 5;
+        const pageComment = ref([]);
+        const calculatePagedNews = () => {
+            const start = (currentPage.value - 1) * pageSize;
+            const end = start + pageSize;
+            pageComment.value = comments.value.slice(start, end);
+        };
+        const handlePageChange = (newPage) => {
+            currentPage.value = newPage;
+            calculatePagedNews();
+        };
+
+        const getUsersComment = () => {
+            axios.get(`http://localhost:8000/api/comment/detail/${route.params.id}`)
+                .then(function (response) {
+                    comments.value = response.data;
+                })
+                .catch(function () {
+                    message.error('Lỗi hệ thống!');
+                });
+        };
+        const handleSubmit = () => {
+            if (!value.value) {
+                message.warning('Vui lòng nhập bình luận!');
+                return;
+            }
+            submitting.value = true;
+            setTimeout(() => {
+                submitting.value = false;
+                axios.post('http://localhost:8000/api/comment', {
+                    content: value.value,
+                    user_id: user.id,
+                    news_id: route.params.id,
+                })
+                    .then(function () {
+                        comments.value = [
+                            {
+                                author: user.name,
+                                avatar: user.avatar,
+                                content: value.value,
+                                datetime: 'Vừa xong',
+                            },
+                            ...comments.value,
+                        ];
+                        message.success('Bình luận thành công!');
+                        value.value = '';
+                    })
+                    .catch(function () {
+                        message.error('Lỗi hệ thống!');
+                    });
+
+            }, 1000);
+        };
         const indicator = h(LoadingOutlined, {
             style: {
                 fontSize: '40px',
@@ -109,22 +180,6 @@ export default defineComponent({
         const related = ref([]);
         const margin = 'row g-0 mt-4';
         const route = useRoute();
-        const data = [
-            {
-                author: 'Han Solo',
-                avatar: 'http://localhost:8000/storage/img/users/default.png',
-                content:
-                    'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-                datetime: dayjs().subtract(1, 'days'),
-            },
-            {
-                author: 'Han Solo',
-                avatar:'http://localhost:8000/storage/img/users/default.png',
-                content:
-                    'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-                datetime: dayjs().subtract(2, 'days'),
-            },
-        ];
         const news = reactive(
             {
                 title: '',
@@ -144,8 +199,6 @@ export default defineComponent({
             const formattedDate = `${day}/${month}/${year}`;
             return formattedDate;
         };
-
-
         const getNews = () => {
             axios.get(`http://localhost:8000/api/news/${route.params.id}`)
                 .then(function (response) {
@@ -178,8 +231,8 @@ export default defineComponent({
                     message.error('Lỗi hệ thống!');
                 });
         }
-        const getCategory = async () => {
-            await axios.get(`http://localhost:8000/api/category`)
+        const getCategory = () => {
+            axios.get(`http://localhost:8000/api/category`)
                 .then(function (response) {
                     if (response.data.length > 0) {
                         response.data.forEach(element => {
@@ -196,22 +249,46 @@ export default defineComponent({
         }
         onMounted(() => {
             getNews();
+            getRelated();
+            getUsersComment();
             getCategory();
-            getRelated()
         });
+        watchEffect(() => {
+            calculatePagedNews();
+            getCategory();
+        });
+        watch(
+            () => route.params.id,
+            (newId, oldId) => {
+                getNews();
+                getRelated();
+                getUsersComment();
+                calculatePagedNews();
+                getCategory();
+            }
+        );
         return {
             ...toRefs(news),
             related,
             check,
-            data,
             indicator,
-            margin
+            margin,
+            comments,
+            submitting,
+            value,
+            user,
+            handleSubmit,
+            currentPage,
+            pageSize,
+            pageComment,
+            handlePageChange
+
         }
     }
 });
 </script>
 <style>
-.content {
+.container-content {
     width: 70rem;
 }
 
@@ -225,12 +302,7 @@ export default defineComponent({
 }
 
 @media screen and (max-width: 768px) {
-    .content {
-        width: 100%;
-    }
-
-    .card-content {
-        display: flex;
+    .container-content {
         width: 100%;
     }
 }

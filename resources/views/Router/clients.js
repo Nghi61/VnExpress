@@ -16,7 +16,7 @@ const clients = [
                 },
             },
             {
-                path: "/news/:slug",
+                path: "news/:slug",
                 name: "clients-news",
                 component: () => import("../Pages/clients/news/index.vue"),
                 meta: {
@@ -24,7 +24,7 @@ const clients = [
                 },
             },
             {
-                path: "/news/detail/:id",
+                path: "news/detail/:id",
                 name: "clients-news-detail",
                 component: () => import("../Pages/clients/news/detail.vue"),
                 meta: {
@@ -33,10 +33,11 @@ const clients = [
             },
             {
                 path: "profile",
-                name: "admin-profile",
-                component: () => import("../Pages/admin/auth/profile.vue"),
+                name: "clients-profile",
+                component: () => import("../Pages/clients/auth/profile.vue"),
                 meta: {
                     title: "Hồ sơ cá nhân",
+                    authencation:true
                 },
             },
             {
@@ -49,7 +50,6 @@ const clients = [
             },
         ],
     },
-
     {
         path: "/:catchAll(.*)",
         component: () => import("../Pages/404.vue"),

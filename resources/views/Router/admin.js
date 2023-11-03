@@ -86,7 +86,7 @@ const admin = [
         ],
     },
     {
-        path: "/login",
+        path: "/admin/login",
         name: "admin-login",
         component: () => import("../Pages/admin/auth/login.vue"),
         meta: {

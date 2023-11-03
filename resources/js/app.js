@@ -2,10 +2,12 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import router from "../views/router/index.js";
 import axios from "axios";
-window.axios = axios;
 import {
     Spin,
     Comment,
+    Form,
+    FormItem,
+    ListItem,
     Tooltip,
     Radio,
     Upload,
@@ -28,10 +30,12 @@ import {
 import App from "./app.vue";
 
 const app = createApp(App);
-
 app.use(createPinia());
 app.use(router);
-app.use(Checkbox);
+app.component('AForm', Form);
+app.component('ACheckbox', Checkbox);
+app.component('AFormItem', FormItem);
+app.component('list', List);
 app.use(Spin);
 app.use(Tooltip);
 app.use(Comment);

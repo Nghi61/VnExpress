@@ -30,7 +30,7 @@ class CommentsController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -38,7 +38,11 @@ class CommentsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $comment = new Comments();
+        $comment->user_id = $request->user_id;
+        $comment->news_id = $request->news_id;
+        $comment->content = $request->content;
+        $comment->save();
     }
 
     /**
@@ -78,6 +82,18 @@ class CommentsController extends Controller
             ->join('users', 'comments.user_id', '=', 'users.id')
             ->select('users.user_name', 'comments.*')
             ->where('users.user_name', 'like', '%' . $query . '%')
+            ->get();
+        foreach ($comments as $comment) {
+            $comment->created_at = date('d-m-Y', strtotime($comment->created_at));
+        }
+        return response()->json($comments);
+    }
+    public function getComment($id){
+        $comments=db::table('comments')
+            ->join('users','comments.user_id','=','users.id')
+            ->select('users.user_name','users.avatar','comments.*')
+            ->orderBy('id','desc')
+            ->where('comments.news_id','=',$id)
             ->get();
         foreach ($comments as $comment) {
             $comment->created_at = date('d-m-Y', strtotime($comment->created_at));

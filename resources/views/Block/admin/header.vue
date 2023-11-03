@@ -51,8 +51,7 @@ export default defineComponent({
         UserOutlined
     },
     setup() {
-
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('admin'));
         const imgLogo = '/logo.svg';
         const imgUser = user.avatar;
         const user_name = user.user_name;

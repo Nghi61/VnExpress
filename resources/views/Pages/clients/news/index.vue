@@ -1,5 +1,5 @@
 <template>
-    <div class="container mt-4 content">
+    <div class="container mt-4 box">
         <div class="row g-0" v-if="pagedNews.length > 0">
             <router-link class="text-decoration-none text-dark"
                 :to="{ name: 'clients-news-detail', params: { id: news[0].id } }">
@@ -108,12 +108,12 @@ export default defineComponent({
 });
 </script>
 <style>
-.content {
+.box {
     width: 60rem;
 }
 
 @media screen and (max-width: 768px) {
-    .content {
+    .box {
         width: 100%;
     }
 

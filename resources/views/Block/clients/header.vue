@@ -15,24 +15,29 @@
                 <span>{{ formattedDate }}</span>
             </div>
             <div class="col-sm-3 d-none d-sm-flex">
-                <a-select class="position-relative" v-model:value="value" mode="multiple" label-in-value placeholder="Tìm kiếm tin tức ..."
-                    style="width: 100%;" :filter-option="false"
-                    :not-found-content="fetching ? undefined : 'Không tồn tại'" :options="data" @search="fetchNews">
+                <a-select class="position-relative" v-model:value="value" mode="multiple" label-in-value
+                    placeholder="Tìm kiếm tin tức ..." style="width: 100%;" :filter-option="true"
+                    :not-found-content="fetching ? undefined : 'Không tồn tại'" :options="data" @search="fetchNews">
                     <template v-if="fetching" #notFoundContent>
                         <a-spin size="small" />
                     </template>
                 </a-select>
                 <SearchOutlined class="position-absolute search" />
             </div>
+
+
             <div class="col-sm-2 col-1 d-sm-flex justify-content-sm-center align-items-center justify-content-center">
                 <a-dropdown>
-                    <a class="ant-dropdown-link d-flex" @click.prevent>
+                    <a class="ant-dropdown-link d-flex text-decoration-none" @click.prevent>
                         <span class="me-2">
-                            <a-avatar :size="{ xs: 24, xl: 30 }" :src="imgUser" alt="Avatar" />
+                            <a-avatar :size="{ xs: 24, xl: 30 }" :src="user ? user.avatar :imgUser" alt="Avatar" />
                         </span>
-                        <span class="d-sm-block d-none">Chào</span>
+                        <span v-if="user" class="d-sm-block d-none text-dark">Chào, {{ user.name }}</span>
+                        <router-link v-else :to="{ name: 'clients-login' }" class="text-decoration-none text-dark">
+                            <span class="d-sm-block d-none">Đăng nhập</span>
+                        </router-link>
                     </a>
-                    <template #overlay>
+                    <template v-if="user" #overlay>
                         <a-menu class="mt-2">
                             <a-menu-item>
                                 <a @click="Profile">Hồ sơ</a>
@@ -47,9 +52,9 @@
         </div>
     </div>
     <a-drawer v-model:open="openLeft" title="Danh mục" placement="left">
-        <a-select class="mb-2 position-relative" v-model:value="value" mode="multiple" label-in-value placeholder="Tìm kiếm tin tức ..."
-            style="width: 100%;" :filter-option="false" :not-found-content="fetching ? undefined : 'Không tồn tại'"
-            :options="data" @search="fetchNews">
+        <a-select class="mb-2 position-relative" v-model:value="value" mode="multiple" label-in-value
+            placeholder="Tìm kiếm tin tức ..." style="width: 100%;" :filter-option="false"
+            :not-found-content="fetching ? undefined : 'Không tồn tại'" :options="data" @search="fetchNews">
             <template v-if="fetching" #notFoundContent>
                 <a-spin size="small" />
             </template>
@@ -59,7 +64,7 @@
 </template>
 <script>
 import Menu from './menu.vue';
-import { MenuOutlined, UserOutlined,SearchOutlined } from '@ant-design/icons-vue';
+import { MenuOutlined, UserOutlined, SearchOutlined } from '@ant-design/icons-vue';
 import { Drawer, message } from 'ant-design-vue';
 import { defineComponent, ref, reactive, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
@@ -107,12 +112,13 @@ export default defineComponent({
                     state.fetching = false;
                 });
         }, 300);
-
         const imgLogo = '/logo.svg';
         const imgUser = 'http://localhost:8000/storage/img/users/default.png';
 
         const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         const monthsOfYear = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+
+        const user = JSON.parse(localStorage.getItem('user'));
 
         const currentDate = new Date();
         const dayOfWeek = daysOfWeek[currentDate.getDay()];
@@ -128,20 +134,20 @@ export default defineComponent({
             openLeft.value = true;
         };
 
-        const inline= ref('inline');
+        const inline = ref('inline');
         const router = useRouter();
 
         const Logout = () => {
             localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            router.push({ name: 'admin-login' });
+            window.location.reload();
         };
 
         const Profile = () => {
-            router.push({ name: 'admin-profile' });
+            router.push({ name: 'clients-profile' });
         };
 
         return {
+            user,
             ...toRefs(state),
             imgLogo,
             imgUser,

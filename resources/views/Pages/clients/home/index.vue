@@ -18,7 +18,7 @@
                 </div>
             </div>
         </div>
-        <hr class="mt-sm-3 mt-0">
+        <hr class="mt-sm-3 mt-0 line">
         <div class="row content">
             <div v-for="(singleNews, index) in news.slice(1, -1)" :key="index" class="col-sm-4 col-12 mt-3">
                 <router-link class="text-decoration-none text-dark"
@@ -39,7 +39,7 @@
                 <hr class="d-sm-none">
             </div>
         </div>
-        <hr class="mt-sm-1 mt-0">
+        <hr class="mt-sm-1 mt-0 line">
         <div class="row mt-3 content display">
             <div class="col-sm-5 mt-2">
                 <div class="card-body">
@@ -105,7 +105,7 @@ export default defineComponent({
     width: 70rem;
 }
 
-hr {
+.line {
     width: 68rem;
     margin: auto;
 }
@@ -136,7 +136,7 @@ hr {
         width: 20rem;
     }
 
-    hr {
+    .line {
         width: 20rem;
         margin-top: 15px;
     }

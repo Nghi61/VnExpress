@@ -31,6 +31,7 @@ Route::get('/category/search/{query}', [CategoryController::class, 'search']);
 Route::get('/news/search/{query}', [NewsController::class, 'search']);
 Route::get('/news/category/{slug}', [NewsController::class,'NewsBySlug']);
 Route::get('/comment/search/{query}', [CommentsController::class, 'search']);
-Route::post('/login',[AuthController::class,'login']);
+Route::get('/comment/detail/{id}', [CommentsController::class, 'getComment']);
+Route::post('/login',[AuthController::class,'Login']);
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/isadmin',[AuthController::class,'isAdmin']);

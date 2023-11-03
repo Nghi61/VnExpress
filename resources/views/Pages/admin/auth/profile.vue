@@ -96,7 +96,6 @@
 </template>
 <script>
 import { FormOutlined } from '@ant-design/icons-vue';
-import { menu} from '../../../stores/menu';
 import { Input, message, Upload } from 'ant-design-vue';
 import { useRouter } from 'vue-router';
 import { defineComponent, reactive, ref, toRefs } from 'vue';
@@ -106,8 +105,6 @@ export default defineComponent({
         FormOutlined,
     },
     setup() {
-        const store = menu();
-        store.onSlectedKeys(['admin-user']);
         const imgLogo = '/logo.svg';
         const fileList = ref([]);
         const errors = ref([]);
@@ -122,7 +119,7 @@ export default defineComponent({
             avatar: '',
             role: '',
         });
-        const infor = JSON.parse(localStorage.getItem('user'));
+        const infor = JSON.parse(localStorage.getItem('admin'));
         user.id = infor.id;
         user.user_name = infor.user_name;
         user.name = infor.name;
@@ -155,8 +152,7 @@ export default defineComponent({
                 .then(res => {
                     if (res.data.status === 200) {
                         message.success('Cập nhật thành công!');
-                        localStorage.setItem('user', JSON.stringify(res.data.user));
-                        router.push({ name: 'admin-users' });
+                        localStorage.setItem('admin', JSON.stringify(res.data.user));
                     }
                 })
                 .catch(err => {
