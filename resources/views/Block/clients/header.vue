@@ -14,23 +14,39 @@
                 <span class="mx-2">|</span>
                 <span>{{ formattedDate }}</span>
             </div>
-            <div class="col-sm-3 d-none d-sm-flex">
-                <a-select class="position-relative" v-model:value="value" mode="multiple" label-in-value
-                    placeholder="Tìm kiếm tin tức ..." style="width: 100%;" :filter-option="true"
-                    :not-found-content="fetching ? undefined : 'Không tồn tại'" :options="data" @search="fetchNews">
-                    <template v-if="fetching" #notFoundContent>
-                        <a-spin size="small" />
-                    </template>
-                </a-select>
-                <SearchOutlined class="position-absolute search" />
+            <div class="col-sm-3 d-none d-sm-table">
+                <a-input-search allowClear class="center-icon position-relative" @change="fetchNews()" v-model:value="data"
+                    size="large" placeholder="Tìm kiếm">
+                </a-input-search>
+                <template v-if="result.length > 0 && !clickedResult">
+                    <a-list class="position-absolute search" :data-source="result">
+                        <template #renderItem="{ item }">
+                            <a-list-item>
+                                <a-list-item-meta>
+                                    <template #title>
+                                        <router-link class="text-decoration-none"
+                                            :to="{ name: 'clients-news-detail', params: { id: item.id } }"
+                                            @click="handleClickResult">{{ item.title }}</router-link>
+                                    </template>
+                                    <template #avatar>
+                                        <a-avatar :src="item.image" />
+                                    </template>
+                                </a-list-item-meta>
+                            </a-list-item>
+                        </template>
+                    </a-list>
+                </template>
+                <template v-if="loading">
+                    <div class="loading p-2 position-absolute">
+                        <a-spin />
+                    </div>
+                </template>
             </div>
-
-
             <div class="col-sm-2 col-1 d-sm-flex justify-content-sm-center align-items-center justify-content-center">
                 <a-dropdown>
                     <a class="ant-dropdown-link d-flex text-decoration-none" @click.prevent>
                         <span class="me-2">
-                            <a-avatar :size="{ xs: 24, xl: 30 }" :src="user ? user.avatar :imgUser" alt="Avatar" />
+                            <a-avatar :size="{ xs: 24, xl: 30 }" :src="user ? user.avatar : imgUser" alt="Avatar" />
                         </span>
                         <span v-if="user" class="d-sm-block d-none text-dark">Chào, {{ user.name }}</span>
                         <router-link v-else :to="{ name: 'clients-login' }" class="text-decoration-none text-dark">
@@ -52,13 +68,32 @@
         </div>
     </div>
     <a-drawer v-model:open="openLeft" title="Danh mục" placement="left">
-        <a-select class="mb-2 position-relative" v-model:value="value" mode="multiple" label-in-value
-            placeholder="Tìm kiếm tin tức ..." style="width: 100%;" :filter-option="false"
-            :not-found-content="fetching ? undefined : 'Không tồn tại'" :options="data" @search="fetchNews">
-            <template v-if="fetching" #notFoundContent>
-                <a-spin size="small" />
-            </template>
-        </a-select>
+        <a-input-search allowClear class="center-icon position-relative" @change="fetchNews()" v-model:value="data"
+                    size="large" placeholder="Tìm kiếm">
+                </a-input-search>
+                <template v-if="result.length > 0 && !clickedResult">
+                    <a-list class="position-absolute search" :data-source="result">
+                        <template #renderItem="{ item }">
+                            <a-list-item>
+                                <a-list-item-meta>
+                                    <template #title>
+                                        <router-link class="text-decoration-none"
+                                            :to="{ name: 'clients-news-detail', params: { id: item.id } }"
+                                            @click="handleClickResult">{{ item.title }}</router-link>
+                                    </template>
+                                    <template #avatar>
+                                        <a-avatar :src="item.image" />
+                                    </template>
+                                </a-list-item-meta>
+                            </a-list-item>
+                        </template>
+                    </a-list>
+                </template>
+                <template v-if="loading">
+                    <div class="loading p-2 position-absolute">
+                        <a-spin />
+                    </div>
+                </template>
         <Menu :mode="inline" />
     </a-drawer>
 </template>
@@ -79,39 +114,32 @@ export default defineComponent({
         SearchOutlined,
     },
     setup() {
-        const state = reactive({
-            data: [],
-            value: [],
-            fetching: false,
-        });
-        const fetchNews = debounce(value => {
-            state.data = [];
-            state.fetching = true;
-            axios.get(`http://localhost:8000/api/news/search/${value}`)
+        const data = ref('');
+        const result = ref([]);
+        const loading = ref(false);
+        const clickedResult = ref(false);
+        const handleClickResult = () => {
+            clickedResult.value = true;
+            data.value = '';
+        }
+        const fetchNews = debounce(() => {
+            loading.value = true;
+            axios.get(`http://localhost:8000/api/news/search/${data.value}`)
                 .then(response => {
-                    if (!Array.isArray(response.data)) {
-                        state.data = [];
-                        state.fetching = false;
-                        return;
-                    }
                     if (response.data.length === 0) {
-                        state.data = [];
-                        state.fetching = false;
-                        return;
+                        result.value = [];
+                        loading.value = false;
+
                     } else {
-                        const data = response.data.map(news => ({
-                            label: `${news.title}`,
-                            value: news.id,
-                        }));
-                        state.data = data;
-                        state.fetching = false;
+                        result.value = response.data;
+                        loading.value = false;
                     }
                 })
                 .catch(error => {
                     message.error('Lỗi hệ thống!');
-                    state.fetching = false;
                 });
         }, 300);
+
         const imgLogo = '/logo.svg';
         const imgUser = 'http://localhost:8000/storage/img/users/default.png';
 
@@ -148,7 +176,9 @@ export default defineComponent({
 
         return {
             user,
-            ...toRefs(state),
+            data,
+            result,
+            loading,
             imgLogo,
             imgUser,
             formattedDate,
@@ -156,6 +186,8 @@ export default defineComponent({
             showDrawerLeft,
             Profile,
             Logout,
+            clickedResult,
+            handleClickResult,
             inline,
             fetchNews
         };
@@ -165,7 +197,15 @@ export default defineComponent({
 </script>
 <style>
 .search {
-    top: 32px;
-    right: 290px;
+    z-index: 1000;
+    width: 19rem;
+    background-color: whitesmoke;
+    max-height: 270px;
+  overflow-y: auto;
 }
-</style>
+
+.loading {
+    z-index: 1000;
+    width: 17rem;
+    margin-left: 10px;
+}</style>

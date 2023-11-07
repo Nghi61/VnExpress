@@ -119,7 +119,8 @@ export default defineComponent({
             avatar: '',
             role: '',
         });
-        const infor = JSON.parse(localStorage.getItem('admin'));
+        const getInfor = JSON.parse(localStorage.getItem('admin'));
+        const infor = getInfor.user;
         user.id = infor.id;
         user.user_name = infor.user_name;
         user.name = infor.name;

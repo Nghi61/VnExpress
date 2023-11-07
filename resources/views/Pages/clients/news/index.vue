@@ -26,14 +26,14 @@
                 <a-spin :indicator="indicator" />
             </div>
         </template>
-        <div class="d-flex justify-content-end m-3">
+        <div v-if="pagedNews>=10" class="d-flex justify-content-end m-3">
             <a-pagination :current="currentPage" :total="news.length" :pageSize="pageSize" @change="handlePageChange" />
         </div>
     </div>
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, watch,h } from 'vue';
+import { defineComponent, ref, onMounted, watch, h } from 'vue';
 import { menu } from '../../../stores/menu';
 import { useRoute } from 'vue-router';
 import { LoadingOutlined } from '@ant-design/icons-vue'
@@ -45,12 +45,6 @@ export default defineComponent({
         Pagination
     },
     setup() {
-        const indicator = h(LoadingOutlined, {
-            style: {
-                fontSize: '40px',
-            },
-            spin: true,
-        });
         const route = useRoute();
         const news = ref([]);
         const slug = ref('');
@@ -58,15 +52,6 @@ export default defineComponent({
         const pageSize = 10;
         const pagedNews = ref([]);
         const store = menu();
-        const calculatePagedNews = () => {
-            const start = (currentPage.value - 1) * pageSize;
-            const end = start + pageSize;
-            pagedNews.value = news.value.slice(start, end);
-        };
-        const handlePageChange = (newPage) => {
-            currentPage.value = newPage;
-            calculatePagedNews();
-        };
         const getNews = () => {
             axios.get(`http://localhost:8000/api/news/category/${slug.value}`)
                 .then(function (response) {
@@ -77,7 +62,6 @@ export default defineComponent({
                     message.error('Lỗi hệ thống!');
                 });
         }
-
         onMounted(() => {
             if (route.params.slug) {
                 slug.value = route.params.slug;
@@ -87,7 +71,6 @@ export default defineComponent({
                 message.error('Lỗi hệ thống!');
             }
         });
-
         watch(() => route.params.slug, (newSlug, oldSlug) => {
             if (newSlug !== oldSlug) {
                 slug.value = newSlug;
@@ -95,6 +78,21 @@ export default defineComponent({
                 getNews();
             }
         });
+        const indicator = h(LoadingOutlined, {
+            style: {
+                fontSize: '40px',
+            },
+            spin: true,
+        });
+        const calculatePagedNews = () => {
+            const start = (currentPage.value - 1) * pageSize;
+            const end = start + pageSize;
+            pagedNews.value = news.value.slice(start, end);
+        };
+        const handlePageChange = (newPage) => {
+            currentPage.value = newPage;
+            calculatePagedNews();
+        };
 
         return {
             indicator,

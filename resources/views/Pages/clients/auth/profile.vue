@@ -109,7 +109,8 @@ export default defineComponent({
             avatar: '',
             role: '',
         });
-        const infor = JSON.parse(localStorage.getItem('user'));
+        const getUser= JSON.parse(localStorage.getItem('user'));
+        const infor = getUser.user;
         user.id = infor.id;
         user.user_name = infor.user_name;
         user.name = infor.name;
@@ -166,6 +167,11 @@ export default defineComponent({
 });
 </script>
 <style>
+.center-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .profile {
     width: 60rem;
     margin: auto;

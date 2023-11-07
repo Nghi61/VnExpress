@@ -33,5 +33,6 @@ Route::get('/news/category/{slug}', [NewsController::class,'NewsBySlug']);
 Route::get('/comment/search/{query}', [CommentsController::class, 'search']);
 Route::get('/comment/detail/{id}', [CommentsController::class, 'getComment']);
 Route::post('/login',[AuthController::class,'Login']);
+Route::post('/forget-password',[AuthController::class,'forgetPassword']);
 Route::post('/register',[AuthController::class,'register']);
 Route::post('/isadmin',[AuthController::class,'isAdmin']);

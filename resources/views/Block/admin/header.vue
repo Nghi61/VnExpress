@@ -61,8 +61,7 @@ export default defineComponent({
             openLeft.value = true;
         };
         const Logout = () => {
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
+            localStorage.removeItem('admin');
             router.push({name:'admin-login'});
         };
         const Profile = () => {

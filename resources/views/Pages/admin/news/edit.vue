@@ -164,7 +164,8 @@ export default defineComponent({
             }
         };
         const updateNews = () => {
-            const user = JSON.parse(localStorage.getItem('user'));
+            const getUser = JSON.parse(localStorage.getItem('admin'));
+            const user = getUser.user;
             news.user_id = user.id;
             if(fileList.value.length > 0)
             news.image=fileList.value[0].response.file_path;

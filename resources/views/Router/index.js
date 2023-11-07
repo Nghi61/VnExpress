@@ -17,15 +17,14 @@ router.beforeEach((to, from, next) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     if (requiresAuth && to.path !== '/admin/login' && !checkAdminSession()) {
         next('/admin/login');
-    }
-    else if(to.meta.authencation && !checkUserSession()){
+    } else if (to.matched.some(record => record.meta.authencation) && !checkUserSession()) {
         next('/login');
-    }
-    else {
+    } else {
         document.title = `${to.meta.title || 'Default Title'}`;
         next();
     }
 });
+
 
 
 export default router;

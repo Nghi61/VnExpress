@@ -58,7 +58,11 @@ export default defineComponent({
             axios.post('http://localhost:8000/api/isadmin', admin)
                 .then((response) => {
                     if (response.status === 200 && response.data.status === 'success') {
-                        localStorage.setItem('admin', JSON.stringify(response.data.admin));
+                        const userWithExpiry = {
+                            user: response.data.user,
+                            expiry: Date.now() + 24 * 60 * 60 * 1000
+                        };
+                        localStorage.setItem('admin', JSON.stringify(userWithExpiry));
                         message.success('Đăng nhập thành công');
                         router.push({ path: '/admin/users' });
                     } else if (response.data.status === 'error') {

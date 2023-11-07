@@ -7,7 +7,7 @@
 			<p class="lead">
 			Trang bạn đang tìm kiếm không tồn tại, đã bị xóa, được đổi tên hoặc tạm thời không có.
 			</p>
-			<a href="#" class="btn btn-success">Trở lại trang chủ</a>
+			<router-link :to="{name:'clients-home'}" class="btn btn-success">Trở lại trang chủ</router-link>
 		</div>
 	</div>
 

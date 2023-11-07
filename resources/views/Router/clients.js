@@ -48,14 +48,32 @@ const clients = [
                     title: "Đăng nhập",
                 },
             },
+            {
+                path: "forget-password",
+                name: "clients-forget-password",
+                component: () => import("../Pages/clients/auth/forgetPassword.vue"),
+                meta: {
+                    title: "Quên mật khẩu",
+                },
+            },
+            {
+                path: "sign-up",
+                name: "clients-sign-up",
+                component: () => import("../Pages/clients/auth/register.vue"),
+                meta: {
+                    title: "Đăng ký",
+                },
+            },
         ],
     },
     {
         path: "/:catchAll(.*)",
+        name: "404",
         component: () => import("../Pages/404.vue"),
         meta: {
             title: "404",
         },
     },
+
 ];
 export default clients;

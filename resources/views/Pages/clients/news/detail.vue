@@ -64,7 +64,7 @@
                             </template>
                         </a-list>
                         <div class="d-flex justify-content-end m-3">
-                            <a-pagination v-if="comments.length" :current="currentPage" :total="comments.length"
+                            <a-pagination v-if="comments.length>=5" :current="currentPage" :total="comments.length"
                                 :pageSize="pageSize" @change="handlePageChange" />
                         </div>
                         <a-comment>
@@ -82,7 +82,6 @@
                                 </a-form-item>
                             </template>
                         </a-comment>
-
                     </div>
                 </div>
                 <div v-else class=" col-8 d-flex justify-content-center">
@@ -112,13 +111,77 @@ export default defineComponent({
         LoadingOutlined,
     },
     setup() {
-        const user = JSON.parse(localStorage.getItem('user'));
+        const getUser= JSON.parse(localStorage.getItem('user'));
+        const user = getUser.user;
         const comments = ref([]);
         const submitting = ref(false);
         const value = ref('');
         const currentPage = ref(1);
         const pageSize = 5;
         const pageComment = ref([]);
+        const check = ref(['false']);
+        const related = ref([]);
+        const margin = 'row g-0 mt-4';
+        const route = useRoute();
+        const news = reactive(
+            {
+                title: '',
+                description: '',
+                image: '',
+                created_at: '',
+                content: '',
+                category_id: '',
+                slug: '',
+            }
+        );
+        const getCategory = () => {
+            axios.get(`http://localhost:8000/api/category`)
+                .then(function (response) {
+                    if (response.data.length > 0) {
+                        response.data.forEach(element => {
+                            if (element.id == news.category_id) {
+                                news.category_id = element.name;
+                                news.slug = element.slug;
+                            }
+                        });
+                    }
+                })
+                .catch(function () {
+                    message.error('Lỗi hệ thống!');
+                });
+        }
+        const getNews = () => {
+            axios.get(`http://localhost:8000/api/news/${route.params.id}`)
+                .then(function (response) {
+                    news.title = response.data.title;
+                    news.description = response.data.description;
+                    news.image = response.data.image;
+                    news.created_at = formatTimeStr(response.data.created_at);
+                    news.content = response.data.content;
+                    news.category_id = response.data.category_id;
+                    news.slug = response.data.slug;
+                    check.value = true;
+                })
+                .catch(function () {
+                    message.error('Lỗi hệ thống!');
+                });
+        }
+        const getRelated = () => {
+            axios.get('http://localhost:8000/api/news')
+                .then(function (response) {
+                    if (response.data.length > 0) {
+                        response.data.forEach(element => {
+                            if (element.id == route.params.id) {
+                                response.data.splice(response.data.indexOf(element), 1);
+                            }
+                        });
+                        related.value = response.data;
+                    }
+                })
+                .catch(function () {
+                    message.error('Lỗi hệ thống!');
+                });
+        }
         const calculatePagedNews = () => {
             const start = (currentPage.value - 1) * pageSize;
             const end = start + pageSize;
@@ -152,15 +215,14 @@ export default defineComponent({
                     news_id: route.params.id,
                 })
                     .then(function () {
-                        comments.value = [
+                        const comment =
                             {
-                                author: user.name,
+                                author: user.user_name,
                                 avatar: user.avatar,
                                 content: value.value,
                                 datetime: 'Vừa xong',
-                            },
-                            ...comments.value,
-                        ];
+                            };
+                        pageComment.value.push(comment);
                         message.success('Bình luận thành công!');
                         value.value = '';
                     })
@@ -176,21 +238,7 @@ export default defineComponent({
             },
             spin: true,
         });
-        const check = ref(['false']);
-        const related = ref([]);
-        const margin = 'row g-0 mt-4';
-        const route = useRoute();
-        const news = reactive(
-            {
-                title: '',
-                description: '',
-                image: '',
-                created_at: '',
-                content: '',
-                category_id: '',
-                slug: '',
-            }
-        );
+
         const formatTimeStr = (timestamp) => {
             const date = new Date(timestamp);
             const day = date.getDate();
@@ -199,54 +247,7 @@ export default defineComponent({
             const formattedDate = `${day}/${month}/${year}`;
             return formattedDate;
         };
-        const getNews = () => {
-            axios.get(`http://localhost:8000/api/news/${route.params.id}`)
-                .then(function (response) {
-                    news.title = response.data.title;
-                    news.description = response.data.description;
-                    news.image = response.data.image;
-                    news.created_at = formatTimeStr(response.data.created_at);
-                    news.content = response.data.content;
-                    news.category_id = response.data.category_id;
-                    news.slug = response.data.slug;
-                    check.value = true;
-                })
-                .catch(function () {
-                    message.error('Lỗi hệ thống!');
-                });
-        }
-        const getRelated = () => {
-            axios.get('http://localhost:8000/api/news')
-                .then(function (response) {
-                    if (response.data.length > 0) {
-                        response.data.forEach(element => {
-                            if (element.id == route.params.id) {
-                                response.data.splice(response.data.indexOf(element), 1);
-                            }
-                        });
-                        related.value = response.data;
-                    }
-                })
-                .catch(function () {
-                    message.error('Lỗi hệ thống!');
-                });
-        }
-        const getCategory = () => {
-            axios.get(`http://localhost:8000/api/category`)
-                .then(function (response) {
-                    if (response.data.length > 0) {
-                        response.data.forEach(element => {
-                            if (element.id == news.category_id) {
-                                news.category_id = element.name;
-                                news.slug = element.slug;
-                            }
-                        });
-                    }
-                })
-                .catch(function () {
-                    message.error('Lỗi hệ thống!');
-                });
-        }
+
         onMounted(() => {
             getNews();
             getRelated();
@@ -267,6 +268,7 @@ export default defineComponent({
                 getCategory();
             }
         );
+
         return {
             ...toRefs(news),
             related,
@@ -282,7 +284,6 @@ export default defineComponent({
             pageSize,
             pageComment,
             handlePageChange
-
         }
     }
 });
