@@ -118,27 +118,6 @@ export default defineComponent({
         const result = ref([]);
         const loading = ref(false);
         const clickedResult = ref(false);
-        const handleClickResult = () => {
-            clickedResult.value = true;
-            data.value = '';
-        }
-        const fetchNews = debounce(() => {
-            loading.value = true;
-            axios.get(`http://localhost:8000/api/news/search/${data.value}`)
-                .then(response => {
-                    if (response.data.length === 0) {
-                        result.value = [];
-                        loading.value = false;
-
-                    } else {
-                        result.value = response.data;
-                        loading.value = false;
-                    }
-                })
-                .catch(error => {
-                    message.error('Lỗi hệ thống!');
-                });
-        }, 300);
 
         const imgLogo = '/logo.svg';
         const imgUser = 'http://localhost:8000/storage/img/users/default.png';
@@ -146,7 +125,11 @@ export default defineComponent({
         const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         const monthsOfYear = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
 
-        const user = JSON.parse(localStorage.getItem('user'));
+        const getUser = JSON.parse(localStorage.getItem('user'));
+        const user=ref(null);
+        if(getUser){
+            user.value=getUser.user;
+        }
 
         const currentDate = new Date();
         const dayOfWeek = daysOfWeek[currentDate.getDay()];
@@ -173,6 +156,28 @@ export default defineComponent({
         const Profile = () => {
             router.push({ name: 'clients-profile' });
         };
+
+        const handleClickResult = () => {
+            clickedResult.value = true;
+            data.value = '';
+        }
+        const fetchNews = debounce(() => {
+            loading.value = true;
+            axios.get(`http://localhost:8000/api/news/search/${data.value}`)
+                .then(response => {
+                    if (response.data.length === 0) {
+                        result.value = [];
+                        loading.value = false;
+
+                    } else {
+                        result.value = response.data;
+                        loading.value = false;
+                    }
+                })
+                .catch(error => {
+                    message.error('Lỗi hệ thống!');
+                });
+        }, 300);
 
         return {
             user,

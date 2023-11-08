@@ -34,7 +34,7 @@
                                         <FormOutlined />
                                     </a-button>
                                 </router-link>
-                                <a-button type="primary" danger @click="() => showModal(record.user_name)"
+                                <a-button type="primary" danger @click="() => showModal(record.user_name, record.id)"
                                     class="center-icon">
                                     <CloseSquareOutlined />
                                 </a-button>

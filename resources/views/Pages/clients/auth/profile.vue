@@ -68,7 +68,7 @@
                             <div class="row mt-5">
                                 <div class="col-12 d-grid d-sm-flex justify-content-sm-end mx-auto">
                                     <a-button class="me-0 mb-3 me-sm-2 mb-sm-0">
-                                        <router-link :to="{ name: 'admin-users' }">
+                                        <router-link :to="{ name: 'clients-home' }">
                                             <span>Hủy</span>
                                         </router-link>
                                     </a-button>
@@ -87,7 +87,6 @@
 <script>
 import { FormOutlined } from '@ant-design/icons-vue';
 import { Input, message, Upload } from 'ant-design-vue';
-import { useRouter } from 'vue-router';
 import { defineComponent, reactive, ref, toRefs } from 'vue';
 import axios from 'axios';
 export default defineComponent({
@@ -109,7 +108,7 @@ export default defineComponent({
             avatar: '',
             role: '',
         });
-        const getUser= JSON.parse(localStorage.getItem('user'));
+        const getUser = JSON.parse(localStorage.getItem('user'));
         const infor = getUser.user;
         user.id = infor.id;
         user.user_name = infor.user_name;
@@ -117,7 +116,6 @@ export default defineComponent({
         user.email = infor.email;
         user.avatar = infor.avatar;
         user.role = infor.role;
-        const router = useRouter();
         if (user.role == 0) {
             user.role = 'Quản trị viên';
         }
@@ -146,7 +144,19 @@ export default defineComponent({
                 .then(res => {
                     if (res.data.status === 200) {
                         message.success('Cập nhật thành công!');
-                        localStorage.setItem('user', JSON.stringify(res.data.user));
+                        const response = res.data;
+                        const userWithExpiry = {
+                            user: response.user,
+                            expiry: Date.now() + 24 * 60 * 60 * 1000
+                        };
+                        localStorage.setItem('user', JSON.stringify(userWithExpiry));
+                        user.id = response.user.id;
+                        user.user_name = response.user.user_name;
+                        user.name = response.user.name;
+                        user.email = response.user.email;
+                        user.avatar = response.user.avatar;
+                        user.role = response.user.role;
+                        window.location.reload();
                     }
                 })
                 .catch(err => {
@@ -167,11 +177,12 @@ export default defineComponent({
 });
 </script>
 <style>
-.center-icon{
+.center-icon {
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 .profile {
     width: 60rem;
     margin: auto;

@@ -120,7 +120,7 @@ class CategoryController extends Controller
      */
     public function destroy(string $name)
     {
-        $category = Category::where('name', $name)->get();
+        $category = Category::where('name', $name)->first();
         $news = News::where('category_id', $category->id)->get();
         foreach ($news as $new) {
             $new->update([

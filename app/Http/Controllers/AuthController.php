@@ -140,10 +140,10 @@ class AuthController extends Controller
                     'password.max' => 'Mật khẩu không quá 30 ký tự',
                     'password.min' => 'Mật khẩu không dưới 6 ký tự',
                 ]);
+                User::find($id)->update([
+                    'password' => hash::make($request->password),
+                ]);
             }
-            User::find($id)->update([
-                'password' => hash::make($request->password),
-            ]);
             return response()->json(['user' => User::find($id), 'status' => 200]);
         }
     }

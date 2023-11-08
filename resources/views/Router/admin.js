@@ -94,6 +94,14 @@ const admin = [
         },
     },
     {
+        path: "/admin/forget-password",
+        name: "admin-forget-password",
+        component: () => import("../Pages/admin/auth/forgetPassword.vue"),
+        meta: {
+            title: "Quên mật khẩu",
+        },
+    },
+    {
         path: "/:catchAll(.*)",
         component: () => import("../Pages/404.vue"),
     },

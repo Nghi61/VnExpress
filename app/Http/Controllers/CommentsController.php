@@ -91,7 +91,7 @@ class CommentsController extends Controller
     public function getComment($id){
         $comments=db::table('comments')
             ->join('users','comments.user_id','=','users.id')
-            ->select('users.user_name','users.avatar','comments.*')
+            ->select('users.name','users.avatar','comments.*')
             ->orderBy('id','desc')
             ->where('comments.news_id','=',$id)
             ->get();

@@ -37,7 +37,7 @@
     </div>
 </template>
 <script>
-import { defineComponent, reactive, ref, toRefs, watch } from 'vue';
+import { defineComponent, reactive, ref, toRefs, watch, onMounted } from 'vue';
 import axios from 'axios';
 import { message } from 'ant-design-vue';
 
@@ -47,24 +47,15 @@ export default defineComponent({
             user_name: '',
             password: ''
         });
-
         let loginAttempts = 0;
         const block = ref(false);
-        let time = ref(300);
-        const savedTime = localStorage.getItem('savedTime');
-
-        if (savedTime) {
-            time = ref(parseInt(savedTime));
-        }
-
+        let time = ref(0);
         const formatTime = (seconds) => {
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = seconds % 60;
             return `${minutes} phút ${remainingSeconds} giây`;
         };
-
         const formattedTime = ref(formatTime(time.value));
-
         const startTimer = () => {
             const interval = setInterval(() => {
                 if (time.value > 0) {
@@ -76,8 +67,15 @@ export default defineComponent({
                 }
             }, 1000);
         };
-
+        onMounted(() => {
+            const savedTime = localStorage.getItem('savedTime');
+            if (savedTime) {
+                time.value = parseInt(savedTime);
+                startTimer();
+            }
+        });
         watch(time, () => {
+
             formattedTime.value = formatTime(time.value);
             if (time.value === 0) {
                 block.value = false;
@@ -88,14 +86,9 @@ export default defineComponent({
 
         const login = () => {
             if (loginAttempts >= 5) {
-                if (time.value === 0) {
-                    time.value = 300; // Reset time to 300 seconds
-                    localStorage.setItem('savedTime', time.value.toString());
-                    startTimer(); // Start the timer again
-                } else {
-                    message.error('Bạn đã vượt quá số lần cho phép đăng nhập. Vui lòng thử lại sau ' + formattedTime.value);
-                    return;
-                }
+                message.error('Bạn đã vượt quá số lần cho phép đăng nhập. Vui lòng thử lại sau 5 phút');
+                time.value = 300;
+                startTimer();
             }
 
             axios.post('http://localhost:8000/api/login', user)
@@ -111,12 +104,7 @@ export default defineComponent({
                     }
                     if (response.data.status === 401) {
                         loginAttempts++;
-                        if (loginAttempts >= 5) {
-                            message.error('Bạn đã vượt quá số lần cho phép đăng nhập. Vui lòng thử lại sau 5 phút');
-                            time.value = 0; // Trigger timer reset
-                        } else {
-                            message.error('Tài khoản hoặc mật khẩu không đúng. Số lần còn lại: ' + (5 - loginAttempts));
-                        }
+                        message.error('Tài khoản hoặc mật khẩu không đúng!');
                     }
                 })
                 .catch((error) => {

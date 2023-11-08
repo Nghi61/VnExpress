@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Comments;
 use App\Models\News;
 use App\Models\User;
@@ -124,23 +125,23 @@ class UsersController extends Controller
                 'password.max' => 'Mật khẩu không quá 30 ký tự',
                 'password.min' => 'Mật khẩu không dưới 6 ký tự',
             ]);
+            User::find($id)->update([
+                'password' => hash::make($request->password),
+            ]);
         }
-        User::find($id)->update([
-            'password' => hash::make($request->password),
-        ]);
+        $user=User::find($id);
+        return response()->json($user);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($name)
+    public function destroy($user_name)
     {
-        $user = User::where('user_name', $name)->get();
-        $new = News::where('user_id', $user->id)->get();
-        $comment = Comments::where('user_id', $user->id)->get();
-        $new->delete();
-        $comment->delete();
+        $user = User::where('user_name', $user_name)->first();
         $user->delete();
+        $comment=Comments::where('user_id',$user->id)->delete();
+        $news=News::where('user_id',$user->id)->delete();
     }
     public function search(string $query)
     {

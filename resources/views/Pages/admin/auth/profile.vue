@@ -127,7 +127,6 @@ export default defineComponent({
         user.email = infor.email;
         user.avatar = infor.avatar;
         user.role = infor.role;
-        const router = useRouter();
         if (user.role == 0) {
             user.role = 'Quản trị viên';
         }
@@ -147,13 +146,25 @@ export default defineComponent({
             }
         };
         const updateProfile = (id) => {
-            if(fileList.value.length > 0)
-            user.avatar=fileList.value[0].response.file_path;
+            if (fileList.value.length > 0)
+                user.avatar = fileList.value[0].response.file_path;
             axios.put(`http://localhost:8000/api/profile/${id}`, user)
                 .then(res => {
                     if (res.data.status === 200) {
                         message.success('Cập nhật thành công!');
-                        localStorage.setItem('admin', JSON.stringify(res.data.user));
+                        const response = res.data;
+                        const userWithExpiry = {
+                            user: response.user,
+                            expiry: Date.now() + 24 * 60 * 60 * 1000
+                        };
+                        localStorage.setItem('admin', JSON.stringify(userWithExpiry));
+                        user.id = response.user.id;
+                        user.user_name = response.user.user_name;
+                        user.name = response.user.name;
+                        user.email = response.user.email;
+                        user.avatar = response.user.avatar;
+                        user.role = response.user.role;
+                        window.location.reload();
                     }
                 })
                 .catch(err => {

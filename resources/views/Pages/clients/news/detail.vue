@@ -50,7 +50,7 @@
                     </div>
                 </div>
 
-                <div class="row" v-if="user">
+                <div class="row">
                     <div class="col-sm-8 mt-4">
                         <h4>Bình luận({{ comments.length }})</h4>
                     </div>
@@ -58,16 +58,16 @@
                         <a-list v-if="comments.length" :data-source="pageComment" item-layout="horizontal">
                             <template #renderItem="{ item }">
                                 <a-list-item>
-                                    <a-comment :author="item.user_name" :avatar="item.avatar" :content="item.content"
+                                    <a-comment :author="item.name" :avatar="item.avatar" :content="item.content"
                                         :datetime="item.created_at" />
                                 </a-list-item>
                             </template>
                         </a-list>
                         <div class="d-flex justify-content-end m-3">
-                            <a-pagination v-if="comments.length>=5" :current="currentPage" :total="comments.length"
+                            <a-pagination v-if="comments.length >= 5" :current="currentPage" :total="comments.length"
                                 :pageSize="pageSize" @change="handlePageChange" />
                         </div>
-                        <a-comment>
+                        <a-comment v-if="getUser">
                             <template #avatar>
                                 <a-avatar :src="user.avatar" alt="Avatar" />
                             </template>
@@ -82,12 +82,12 @@
                                 </a-form-item>
                             </template>
                         </a-comment>
+                        <div v-else class=" col-10 d-flex justify-content-center">
+                            <router-link class="p-4" :to="{ name: 'clients-login' }">
+                                <button class="btn btn-danger">Đăng nhập để bình luận</button>
+                            </router-link>
+                        </div>
                     </div>
-                </div>
-                <div v-else class=" col-8 d-flex justify-content-center">
-                    <router-link class="p-4" :to="{ name: 'clients-login' }">
-                        <button class="btn btn-danger">Đăng nhập để bình luận</button>
-                    </router-link>
                 </div>
             </div>
         </template>
@@ -111,8 +111,8 @@ export default defineComponent({
         LoadingOutlined,
     },
     setup() {
-        const getUser= JSON.parse(localStorage.getItem('user'));
-        const user = getUser.user;
+        const getUser = JSON.parse(localStorage.getItem('user'));
+        const user = ref({});
         const comments = ref([]);
         const submitting = ref(false);
         const value = ref('');
@@ -202,6 +202,9 @@ export default defineComponent({
                 });
         };
         const handleSubmit = () => {
+            if (getUser) {
+                user.value = getUser.user;
+            }
             if (!value.value) {
                 message.warning('Vui lòng nhập bình luận!');
                 return;
@@ -211,18 +214,18 @@ export default defineComponent({
                 submitting.value = false;
                 axios.post('http://localhost:8000/api/comment', {
                     content: value.value,
-                    user_id: user.id,
+                    user_id: user.value.id,
                     news_id: route.params.id,
                 })
                     .then(function () {
                         const comment =
-                            {
-                                author: user.user_name,
-                                avatar: user.avatar,
-                                content: value.value,
-                                datetime: 'Vừa xong',
-                            };
-                        pageComment.value.push(comment);
+                        {
+                            name: user.value.name,
+                            avatar: user.value.avatar,
+                            content: value.value,
+                            created_at: 'Vừa xong',
+                        };
+                        comments.value.push(comment);
                         message.success('Bình luận thành công!');
                         value.value = '';
                     })
@@ -249,10 +252,10 @@ export default defineComponent({
         };
 
         onMounted(() => {
+            getCategory();
             getNews();
             getRelated();
             getUsersComment();
-            getCategory();
         });
         watchEffect(() => {
             calculatePagedNews();
@@ -278,6 +281,7 @@ export default defineComponent({
             comments,
             submitting,
             value,
+            getUser,
             user,
             handleSubmit,
             currentPage,

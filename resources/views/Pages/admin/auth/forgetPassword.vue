@@ -1,11 +1,19 @@
 <template>
-    <div class="container">
+    <div class="container py-4">
         <div class="row d-flex justify-content-center align-items-center">
-            <div class="card mt-5" style="border-radius: 1rem; width: 35rem;">
-                <div class="row g-0">
-                    <div class="card-body p-5 text-black">
-
-                        <form @submit.prevent="forgetPassword()">
+            <div class="col col-xl-10">
+                <div class="card" style="border-radius: 1rem;">
+                    <div class="row g-0">
+                        <div class="col-md-6 col-lg-5 d-none d-md-block">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/img1.webp"
+                                alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
+                        </div>
+                        <div class="col-md-6 col-lg-7 d-flex align-items-center">
+                            <div class="card-body p-4 p-lg-5 text-black">
+                                <form @submit.prevent="forgetPassword()">
+                                    <div class="d-flex mb-5 ">
+                                        <img :src="imgPath" alt="Logo">
+                                    </div>
                             <div class="d-flex justify-content-center align-items-center mb-3">
                                 <h5>QUÊN MẬT KHẨU</h5>
                             </div>
@@ -21,6 +29,8 @@
                         </template><span v-else>Gửi mail</span> </button>
                             </div>
                         </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -37,6 +47,7 @@ export default defineComponent({
         Spin
     },
     setup() {
+        const imgPath = '/logo.svg';
         const route=useRouter();
         const check=ref(false)
         const email = reactive({
@@ -49,7 +60,7 @@ export default defineComponent({
                 .then((response) => {
                     if (response.data.status === 200) {
                         message.success('Gửi mail thành công!');
-                        route.push({name:'clients-login'});
+                        route.push({name:'admin-login'});
                     }
                     if(response.data.status === 401) {
                         message.error('Email không tồn tại!');
@@ -64,6 +75,7 @@ export default defineComponent({
 
         return {
             ...toRefs(email),
+            imgPath,
             check,
             forgetPassword
         }
